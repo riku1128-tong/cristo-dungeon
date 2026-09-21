@@ -68,13 +68,28 @@ export class Renderer {
       const i = y * map.w + x;
       const vis = game.visible[i] === 1;
       let t;
-      if (map.tiles[i] === FLOOR) t = getTile('floor' + this.floorVariant[i]);
+      const isFloor = map.tiles[i] === FLOOR;
+      if (isFloor) t = getTile('floor' + this.floorVariant[i]);
       else {
-        const name = wallTileName(map, x, y);
-        if (!name) continue;
-        t = getTile(name);
+        // 床に接する壁だけ描く。形はオートタイルではなく均一な石にして通路の輪郭をまっすぐ見せる
+        if (!wallTileName(map, x, y)) continue;
+        t = getTile(((x * 7 + y * 13) % 5 === 0) ? 'wall_solid1' : 'wall_solid0');
       }
       ctx.drawImage(t.img, t.sx, t.sy, t.size, t.size, x * TILE, y * TILE, TILE, TILE);
+      if (isFloor) {
+        // 通路は部屋より暗くして区別、1 マスごとに薄いグリッド
+        if (map.roomId[i] < 0) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.fillRect(x * TILE, y * TILE, TILE, 1);
+        ctx.fillRect(x * TILE, y * TILE, 1, TILE);
+      } else {
+        // 壁と床の境目に濃い線
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        if (map.isFloor(x, y + 1)) ctx.fillRect(x * TILE, y * TILE + TILE - 2, TILE, 2);
+        if (map.isFloor(x, y - 1)) ctx.fillRect(x * TILE, y * TILE, TILE, 2);
+        if (map.isFloor(x + 1, y)) ctx.fillRect(x * TILE + TILE - 2, y * TILE, 2, TILE);
+        if (map.isFloor(x - 1, y)) ctx.fillRect(x * TILE, y * TILE, 2, TILE);
+      }
       // 見えていない所は薄暗く。未探索はさらに暗いが輪郭は分かる
       if (!vis) { ctx.fillStyle = map.explored[i] ? 'rgba(0,0,0,0.42)' : 'rgba(0,0,0,0.62)'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
     }

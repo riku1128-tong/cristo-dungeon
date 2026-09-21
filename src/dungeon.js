@@ -97,23 +97,29 @@ function tryGenerate(rng, opts) {
   return map;
 }
 
-// 部屋 a と b を L 字/ Z 字の通路で結ぶ。部屋の縁に出入口を作る
+// 部屋 a と b を L 字/ Z 字の通路で結ぶ。出入口は部屋の辺の内側(四隅を避ける)に作り、まず 1 マス以上まっすぐ出る
+function edgePoint(rng, lo, len) {
+  // 長さ len の辺から、両端を除いた位置を選ぶ (len<=2 なら仕方なく端)
+  return len >= 3 ? rng.int(lo + 1, lo + len - 2) : rng.int(lo, lo + len - 1);
+}
 function carveCorridor(map, rng, a, b) {
   const horizontal = a.r === b.r;
   let p, q;
   if (horizontal) {
     const [l, r] = a.c < b.c ? [a, b] : [b, a];
-    p = { x: l.x + l.w - 1, y: rng.int(l.y, l.y + l.h - 1) };
-    q = { x: r.x, y: rng.int(r.y, r.y + r.h - 1) };
+    p = { x: l.x + l.w - 1, y: edgePoint(rng, l.y, l.h) };
+    q = { x: r.x, y: edgePoint(rng, r.y, r.h) };
     if (!l.node) p.x += 1; if (!r.node) q.x -= 1;
-    const midx = rng.int(Math.min(p.x, q.x), Math.max(p.x, q.x));
+    const lo = Math.min(p.x, q.x) + 1, hi = Math.max(p.x, q.x) - 1;
+    const midx = hi >= lo ? rng.int(lo, hi) : Math.min(p.x, q.x);
     line(map, p.x, p.y, midx, p.y); line(map, midx, p.y, midx, q.y); line(map, midx, q.y, q.x, q.y);
   } else {
     const [t, u] = a.r < b.r ? [a, b] : [b, a];
-    p = { x: rng.int(t.x, t.x + t.w - 1), y: t.y + t.h - 1 };
-    q = { x: rng.int(u.x, u.x + u.w - 1), y: u.y };
+    p = { x: edgePoint(rng, t.x, t.w), y: t.y + t.h - 1 };
+    q = { x: edgePoint(rng, u.x, u.w), y: u.y };
     if (!t.node) p.y += 1; if (!u.node) q.y -= 1;
-    const midy = rng.int(Math.min(p.y, q.y), Math.max(p.y, q.y));
+    const lo = Math.min(p.y, q.y) + 1, hi = Math.max(p.y, q.y) - 1;
+    const midy = hi >= lo ? rng.int(lo, hi) : Math.min(p.y, q.y);
     line(map, p.x, p.y, p.x, midy); line(map, p.x, midy, q.x, midy); line(map, q.x, midy, q.x, q.y);
   }
 }
