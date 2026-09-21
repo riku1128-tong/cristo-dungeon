@@ -63,7 +63,7 @@ export class Game {
       && !(x === this.map.stairs.x && y === this.map.stairs.y);
     // 敵
     const table = monstersForFloor(n);
-    const count = rng.int(4, 7);
+    const count = rng.int(3, 6);
     for (let i = 0; i < count; i++) {
       const spot = this.map.randomFloor(rng, (x, y) => free(x, y) && this.map.room(x, y) !== this.map.room(this.player.x, this.player.y));
       if (!spot) break;
@@ -138,7 +138,7 @@ export class Game {
     }
     const trap = this.traps.find(t => t.x === p.x && t.y === p.y);
     if (trap) this.triggerTrap(trap);
-    if (this.map.stairs.x === p.x && this.map.stairs.y === p.y) this.log(this.map.stairs.up ? '上り階段がある。（> で上る）' : '下り階段がある。（> で降りる）');
+    if (this.map.stairs.x === p.x && this.map.stairs.y === p.y) this.log(this.map.stairs.up ? '上り階段がある。' : '下り階段がある。');
   }
 
   addItem(item) {

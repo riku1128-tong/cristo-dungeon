@@ -59,8 +59,9 @@ try {
       const t0 = Date.now();
       let last = -1;
       while (Date.now() - t0 < 180000) {
-        const s = await page.evaluate(() => ({ turn: window.__auto.totalTurns + window.__game.turn, floor: window.__game.floor, lv: window.__game.player.lv, hp: window.__game.player.hp, runs: window.__auto.runs, deaths: window.__auto.deaths, clears: window.__auto.clears, maxFloor: Math.max(window.__auto.maxFloor, window.__game.floor) }));
-        if (s.turn >= turns) { console.log('reached', s); break; }
+        const s = await page.evaluate(() => window.__game.player && ({ turn: window.__auto.totalTurns + window.__game.turn, floor: window.__game.floor, lv: window.__game.player.lv, hp: window.__game.player.hp, runs: window.__auto.runs, deaths: window.__auto.deaths, clears: window.__auto.clears, maxFloor: Math.max(window.__auto.maxFloor, window.__game.floor) }));
+        if (!s) { await new Promise(r => setTimeout(r, 200)); continue; }
+        if (s.turn >= turns) { console.log('reached', s); const dl = await page.evaluate(() => window.__auto.deathLog || []); for (const d of dl) console.log(`death B${d.floor}F Lv${d.lv} t${d.turn}: ${d.msg}`); break; }
         if (errors.length) break;
         if (Math.floor(s.turn / 500) !== Math.floor(last / 500)) { console.log(Math.round((Date.now() - t0) / 1000) + 's', s); last = s.turn; }
         await new Promise(r => setTimeout(r, 200));

@@ -1,5 +1,5 @@
 // 経験値テーブル (Lv n に必要な累計 EXP) と成長
-export const EXP_TABLE = [0, 0, 8, 20, 40, 70, 110, 165, 240, 340, 470, 630, 830, 1080, 1400, 1800, 2300, 2900, 3600, 4400, 5300];
+export const EXP_TABLE = [0, 0, 5, 12, 25, 45, 70, 100, 140, 200, 280, 380, 500, 650, 830, 1050, 1300, 1600, 1950, 2350, 2800];
 export const MAX_LV = 20;
 
 export function levelForExp(exp) {
@@ -11,7 +11,7 @@ export function levelForExp(exp) {
 // レベルアップ時の上昇値
 export function growth(rng, lv) {
   return {
-    hp: rng.int(4, 6),
+    hp: rng.int(5, 7),
     mp: rng.int(2, 3),
     str: lv % 4 === 0 ? 1 : 0,
   };

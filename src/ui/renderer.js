@@ -107,7 +107,8 @@ export class Renderer {
     const row = DIRS[dirKey].row;
     let frame = 0;
     if (spr.frames > 1) {
-      if (e.anim.walking || (e.kind === 'player' && e.anim.marching)) frame = Math.floor(now / (1000 / WALK_FPS)) % spr.frames;
+      if (e.anim.walking) frame = Math.floor(now / (1000 / WALK_FPS)) % spr.frames;
+      else if (e.kind === 'player') frame = Math.floor(now / (1000 / 3)) % spr.frames;  // 待機中もゆっくり足踏み
       else frame = 0;
     }
     let px = e.vx * TILE + TILE / 2 - CELL / 2;

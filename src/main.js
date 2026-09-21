@@ -178,7 +178,7 @@ function frame(now) {
   } else {
     const keys = input.consume();
     if (keys.some(k => is(k, 'ok'))) { menu.close(); game.state = 'title'; }
-    if (autoplay) { auto.runs++; if (game.state === 'dead') auto.deaths++; else auto.clears++; auto.totalTurns += game.turn; auto.maxFloor = Math.max(auto.maxFloor, game.floor); game.newGame(); }
+    if (autoplay) { auto.runs++; if (game.state === 'dead') { auto.deaths++; (auto.deathLog = auto.deathLog || []).push({ floor: game.floor, lv: game.player.lv, turn: game.turn, msg: game.messages.slice(-4).map(m => m.text).join(' / ') }); } else auto.clears++; auto.totalTurns += game.turn; auto.maxFloor = Math.max(auto.maxFloor, game.floor); game.newGame(); }
     renderer.draw(game, now, (c) => drawResult(c));
   }
   requestAnimationFrame(frame);
