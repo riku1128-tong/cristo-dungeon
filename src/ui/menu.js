@@ -116,7 +116,7 @@ export class MenuStack {
   draw(ctx) {
     for (const m of this.stack) {
       if (m.type === 'status') { this.drawStatus(ctx); continue; }
-      const h = drawMenu(ctx, m.x, m.y, m.w, m.items, m.cursor, { title: m.title, rows: m.rows });
+      const h = drawMenu(ctx, m.x, m.y, m.w, m.items, m.cursor, { title: m.title, rows: m.rows ? Math.min(m.rows, m.items.length) : undefined });
       const cur = m.items[m.cursor];
       const desc = m.desc || (m.showDesc && cur && (cur.desc || (cur.item && ITEMS[cur.item.id].desc)));
       if (desc) {

@@ -36,6 +36,16 @@ export class Input {
   }
 }
 
+// 単発押しの方向キー判定（短いタップでも 1 歩動けるように）
+const DIR_KEYS = {
+  ArrowUp: 'up', KeyW: 'up', Numpad8: 'up', KeyK: 'up',
+  ArrowDown: 'down', KeyS: 'down', Numpad2: 'down', KeyJ: 'down',
+  ArrowLeft: 'left', KeyA: 'left', Numpad4: 'left', KeyH: 'left',
+  ArrowRight: 'right', KeyD: 'right', Numpad6: 'right', KeyL: 'right',
+  Numpad7: 'ul', KeyY: 'ul', Numpad9: 'ur', KeyU: 'ur', Numpad1: 'dl', KeyB: 'dl', Numpad3: 'dr', KeyN: 'dr',
+};
+export function dirFromCode(code) { return DIR_KEYS[code] || null; }
+
 export const KEY = {
   ok: ['Enter', 'Space', 'KeyZ'],
   cancel: ['Escape', 'KeyX', 'Backspace'],

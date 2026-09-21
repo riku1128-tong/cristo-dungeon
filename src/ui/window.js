@@ -12,7 +12,7 @@ export function setFont(ctx, size = TEXT) {
 
 // 黒地・白二重枠の DQ ウィンドウ
 export function drawWindow(ctx, x, y, w, h, opts = {}) {
-  ctx.fillStyle = opts.fill || 'rgba(0,0,0,0.92)';
+  ctx.fillStyle = opts.fill || '#000';
   ctx.fillRect(x, y, w, h);
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 2;

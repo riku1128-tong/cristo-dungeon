@@ -3,7 +3,7 @@ import { SCREEN_W, SCREEN_H, MOVE_MS } from './config.js';
 import { loadAssets } from './assets.js';
 import { Game } from './game.js';
 import { Renderer } from './ui/renderer.js';
-import { Input, is } from './ui/input.js';
+import { Input, is, dirFromCode } from './ui/input.js';
 import { MenuStack } from './ui/menu.js';
 import { drawWindow, text, textCenter } from './ui/window.js';
 
@@ -44,7 +44,9 @@ function handlePlay(now) {
     if (now - lastMove > 200) { lastMove = now; game.rest(); }
     return;
   }
+  let tapped = null;
   for (const k of keys) {
+    if (dirFromCode(k)) tapped = dirFromCode(k);
     if (is(k, 'cancel')) { menu.openMain(); return; }
     if (is(k, 'inventory')) { menu.openInventory(); return; }
     if (is(k, 'spells')) { menu.openSpells(); return; }
@@ -53,8 +55,8 @@ function handlePlay(now) {
     if (is(k, 'rest')) { game.rest(); lastMove = now; return; }
     if (is(k, 'stairs')) { menu.footAction(); return; }
   }
-  const dir = input.heldDir();
-  if (dir && now - lastMove >= MOVE_MS) {
+  const dir = input.heldDir() || tapped;
+  if (dir && (tapped || now - lastMove >= MOVE_MS)) {
     if (input.shift) { p.dir = dir; lastMove = now; return; }
     const moved = game.tryMove(dir);
     lastMove = now;
@@ -72,31 +74,52 @@ function handleAutoplay(now) {
 function autoplayStep() {
   const p = game.player;
   const rng = game.rng;
+  const F = autoplayFns;
   if (menu.open) menu.close();
   if (p.status.sleep > 0) { game.rest(); return; }
   const s = game.map.stairs;
-  if (s.x === p.x && s.y === p.y) { game.useStairs(); return; }
-  const r = rng.next();
-  if (r < 0.03 && p.inventory.length) {
-    const it = rng.pick(p.inventory);
-    const f = rng.pick([autoplayFns.useItem, autoplayFns.equipItem, autoplayFns.throwItem, autoplayFns.dropItem]);
-    f(game, it);
-    return;
+  const inv = p.inventory;
+  const defOf = it => F.ITEMS[it.id];
+  // 装備: 一番強い武器・盾を装備
+  const bestW = inv.filter(i => defOf(i).kind === 'weapon').sort((a, b) => defOf(b).atk - defOf(a).atk)[0];
+  if (bestW && p.weapon !== bestW) { F.equipItem(game, bestW); return; }
+  const bestS = inv.filter(i => defOf(i).kind === 'shield').sort((a, b) => defOf(b).def - defOf(a).def)[0];
+  if (bestS && p.shield !== bestS) { F.equipItem(game, bestS); return; }
+  // 回復
+  if (p.hp < p.maxHp * 0.4) {
+    const herb = inv.find(i => defOf(i).effect === 'heal');
+    if (herb) { F.useItem(game, herb); return; }
+    const sp = F.spellsForLevel(p.lv).filter(x => x.target === 'self' && x.id.includes('hoimi') && p.mp >= x.mp).pop();
+    if (sp) { F.castSpell(game, sp); return; }
+    if (p.weapon && defOf(p.weapon).use && defOf(p.weapon).use.effect === 'hoimi' && p.mp >= 2) { F.useItem(game, p.weapon); return; }
   }
-  if (r < 0.05) { const sp = autoplayFns.spellsForLevel(p.lv); if (sp.length) autoplayFns.castSpell(game, rng.pick(sp)); return; }
+  if (p.hunger < 30) { const food = inv.find(i => defOf(i).effect === 'food'); if (food) { F.useItem(game, food); return; } }
+  if (p.status.poison > 0) { const a = inv.find(i => defOf(i).effect === 'cure_poison'); if (a) { F.useItem(game, a); return; } }
+  if (inv.some(i => defOf(i).effect === 'str_up' || defOf(i).effect === 'maxhp_up')) { F.useItem(game, inv.find(i => defOf(i).effect === 'str_up' || defOf(i).effect === 'maxhp_up')); return; }
   // 隣接する敵を攻撃
   for (const k of DIRS_LIST) {
     const d = DIRS_[k];
-    if (game.monsterAt(p.x + d.dx, p.y + d.dy) && autoplayFns.canStep(game.map, p.x, p.y, d.dx, d.dy)) { p.dir = k; game.attack(); return; }
+    if (game.monsterAt(p.x + d.dx, p.y + d.dy) && F.canStep(game.map, p.x, p.y, d.dx, d.dy)) {
+      p.dir = k;
+      if (p.mp >= 4 && !(p.status.baikiruto > 0) && F.spellsForLevel(p.lv).some(x => x.id === 'baikiruto') && rng.chance(0.3)) { F.castSpell(game, F.SPELLS.find(x => x.id === 'baikiruto')); return; }
+      game.attack(); return;
+    }
   }
-  const key = game.floor + ':' + game.returning + ':' + game.map.stairs.x;
-  if (auto.floorKey !== key) { auto.floorKey = key; auto.dist = autoplayFns.bfsDistances(game.map, s.x, s.y); }
+  if (s.x === p.x && s.y === p.y) { game.useStairs(); return; }
+  // 見えているアイテムがあれば拾いに行く（部屋内）
+  const key = game.floor + ':' + game.returning + ':' + game.map.stairs.x + ':' + game.items.length;
+  if (auto.floorKey !== key) {
+    auto.floorKey = key;
+    const target = game.items.find(i => game.isVisible(i.x, i.y) && inv.length < 20) || s;
+    auto.dist = F.bfsDistances(game.map, target.x, target.y);
+  }
   const here = auto.dist[p.y * game.map.w + p.x];
   const order = rng.shuffle(['up', 'down', 'left', 'right']);
   for (const k of order) {
     const d = DIRS_[k], nx = p.x + d.dx, ny = p.y + d.dy;
     if (game.map.isFloor(nx, ny) && auto.dist[ny * game.map.w + nx] === here - 1 && !game.monsterAt(nx, ny)) { game.tryMove(k); return; }
   }
+  if (here === 0) { auto.floorKey = null; game.rest(); return; }
   for (const k of order) if (game.tryMove(k)) return;
   game.rest();
 }
@@ -104,8 +127,8 @@ let autoplayFns = null;
 let DIRS_ = null;
 const DIRS_LIST = ['up', 'down', 'left', 'right', 'ul', 'ur', 'dl', 'dr'];
 if (autoplay) {
-  Promise.all([import('./systems/inventory.js'), import('./systems/spells.js'), import('./data/spells.js'), import('./config.js'), import('./dungeon.js')])
-    .then(([inv, sp, sd, cfg, dg]) => { autoplayFns = { ...inv, ...sp, ...sd, canStep: dg.canStep, bfsDistances: dg.bfsDistances }; DIRS_ = cfg.DIRS; });
+  Promise.all([import('./systems/inventory.js'), import('./systems/spells.js'), import('./data/spells.js'), import('./config.js'), import('./dungeon.js'), import('./data/items.js')])
+    .then(([inv, sp, sd, cfg, dg, items]) => { autoplayFns = { ...inv, ...sp, ...sd, canStep: dg.canStep, bfsDistances: dg.bfsDistances, ITEMS: items.ITEMS }; DIRS_ = cfg.DIRS; });
 }
 
 // ---- シーン描画 ----------------------------------------------------------------
