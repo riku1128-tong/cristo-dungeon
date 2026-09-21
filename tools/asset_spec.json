@@ -9,9 +9,9 @@
       "layout": {
         "order": [
           "up",
-          "left",
+          "right",
           "down",
-          "right"
+          "left"
         ],
         "frames": 4,
         "mode": "rows"
