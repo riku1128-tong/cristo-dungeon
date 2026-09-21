@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>tests</title>
+<style>body{background:#111;color:#ddd;font-family:monospace;padding:16px} .ok{color:#8f8} .fail{color:#f88}</style>
+</head>
+<body>
+<h3>クリフト ふしぎのダンジョン - tests</h3>
+<pre id="out"></pre>
+<script type="module">
+import { RNG } from '../src/rng.js';
+import { generateFloor, canStep, bfsDistances, FLOOR } from '../src/dungeon.js';
+import { Game } from '../src/game.js';
+import { makeMonster } from '../src/entities.js';
+import { ITEMS, makeItem } from '../src/data/items.js';
+import { MONSTERS } from '../src/data/monsters.js';
+import { EXP_TABLE } from '../src/data/levels.js';
+import { SPELLS } from '../src/data/spells.js';
+import { calcDamage, playerAtk, playerDef } from '../src/systems/combat.js';
+import { useItem, equipItem, throwItem } from '../src/systems/inventory.js';
+import { castSpell } from '../src/systems/spells.js';
+import { monsterAct } from '../src/systems/ai.js';
+
+const results = [];
+const out = document.getElementById('out');
+function test(name, fn) {
+  try { const msg = fn(); results.push({ name, ok: true, msg: msg || '' }); }
+  catch (e) { results.push({ name, ok: false, msg: e.message }); }
+  const r = results[results.length - 1];
+  out.innerHTML += `<span class="${r.ok ? 'ok' : 'fail'}">${r.ok ? 'ok  ' : 'FAIL'} ${name}${r.msg ? ' - ' + r.msg : ''}</span>\n`;
+}
+const assert = (c, m) => { if (!c) throw new Error(m || 'assertion failed'); };
+const eq = (a, b, m) => { if (a !== b) throw new Error(`${m || ''} expected ${b}, got ${a}`); };
+
+// ゲームを作り、乱数を固定 (next() が常に v) して舞台を整える
+function setup(seed = 1, fixed = 0.0) {
+  const g = new Game(seed);
+  g.newGame();
+  g.monsters = []; g.items = []; g.traps = [];
+  if (fixed != null) g.rng.next = () => fixed;
+  // プレイヤーを部屋の中央寄りに置く（周囲 2 マスが床）
+  const room = g.map.rooms.find(r => !r.node && r.w >= 5 && r.h >= 5) || g.map.rooms.find(r => !r.node);
+  g.player.x = room.x + 2; g.player.y = room.y + 2; g.player.dir = 'right';
+  g.updateVisible();
+  g.map.stairs.x = room.x; g.map.stairs.y = room.y; // 邪魔にならない場所へ
+  return g;
+}
+function give(g, id) { const it = makeItem(id); g.player.inventory.push(it); return it; }
+function spawn(g, id, dx, dy) { const m = makeMonster(id, g.player.x + dx, g.player.y + dy); m.asleep = false; g.monsters.push(m); return m; }
+
+// ---- ダンジョン ------------------------------------------------------------
+test('dungeon: 200 floors connected, stairs on floor, >=4 rooms', () => {
+  for (let s = 1; s <= 200; s++) {
+    const m = generateFloor(new RNG(s), { stairsUp: s % 2 === 0 });
+    assert(m.isFloor(m.stairs.x, m.stairs.y), `seed ${s}: stairs not on floor`);
+    assert(m.rooms.filter(r => !r.node).length >= 4, `seed ${s}: rooms`);
+    const d = bfsDistances(m, m.stairs.x, m.stairs.y);
+    for (let i = 0; i < m.tiles.length; i++) if (m.tiles[i] === FLOOR) assert(d[i] >= 0, `seed ${s}: unreachable tile ${i}`);
+    assert(m.stairs.up === (s % 2 === 0), 'stairs direction');
+  }
+});
+test('dungeon: diagonal corner-cutting is blocked', () => {
+  const m = generateFloor(new RNG(3));
+  let checked = 0;
+  for (let y = 1; y < m.h - 1; y++) for (let x = 1; x < m.w - 1; x++) {
+    if (!m.isFloor(x, y)) continue;
+    for (const [dx, dy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+      if (m.isFloor(x + dx, y + dy) && (!m.isFloor(x + dx, y) || !m.isFloor(x, y + dy))) { assert(!canStep(m, x, y, dx, dy)); checked++; }
+    }
+  }
+  return `${checked} corners checked`;
+});
+
+// ---- データ -------------------------------------------------------------------
+test('data: 17 weapons and 6 shields with the requested names', () => {
+  const w = Object.values(ITEMS).filter(i => i.kind === 'weapon').map(i => i.name);
+  const s = Object.values(ITEMS).filter(i => i.kind === 'shield').map(i => i.name);
+  const W = ['ひのきのぼう', '祝福の杖', 'こんぼう', '銅の剣', '聖なるナイフ', 'クロスボウ', 'くさりがま', '鉄の槍', 'ホーリーランス', '微笑みの杖', '天罰の杖', '魔封じの杖', '理力の杖', 'マグマの杖', '奇跡の剣', 'はぐれメタルの剣'];
+  const S = ['皮の盾', 'うろこの盾', '鉄の盾', '力の盾', 'ミラーシールド', 'はぐれメタルの盾'];
+  for (const n of W) assert(w.includes(n), 'missing weapon ' + n);
+  for (const n of S) assert(s.includes(n), 'missing shield ' + n);
+  eq(w.length, 16, 'weapon count'); eq(s.length, 6, 'shield count');
+});
+test('data: EXP table monotonic', () => { for (let i = 2; i < EXP_TABLE.length; i++) assert(EXP_TABLE[i] > EXP_TABLE[i - 1]); });
+test('data: every floor 1-10 has monsters and items', () => {
+  for (let f = 1; f <= 10; f++) {
+    assert(Object.values(MONSTERS).some(m => f >= m.floors[0] && f <= m.floors[1]), 'monsters floor ' + f);
+    assert(Object.values(ITEMS).some(i => i.w > 0 && f >= i.floors[0] && f <= i.floors[1]), 'items floor ' + f);
+  }
+});
+test('combat: damage formula range', () => {
+  const rng = new RNG(5);
+  for (let i = 0; i < 1000; i++) { const d = calcDamage(rng, 10, 4); assert(d >= 7 && d <= 9, 'dmg ' + d); }
+  eq(calcDamage(rng, 1, 50), 1, 'min 1');
+});
+
+// ---- 盾 ----------------------------------------------------------------------
+test('皮の盾: hunger drops every 20 turns instead of 10', () => {
+  const g = setup();
+  for (let i = 0; i < 20; i++) g.rest();
+  eq(g.player.hunger, 98, 'no shield');
+  const s = give(g, 's_leather_shield'); equipItem(g, s);
+  const h = g.player.hunger; g.turn = 0;
+  for (let i = 0; i < 20; i++) g.rest();
+  eq(g.player.hunger, h - 1, 'with shield');
+});
+test('うろこの盾: poison is blocked', () => {
+  const g = setup();
+  g.applyPoison('test'); assert(g.player.status.poison > 0, 'poisoned without shield');
+  delete g.player.status.poison;
+  equipItem(g, give(g, 's_scale_shield'));
+  g.applyPoison('test'); assert(!g.player.status.poison, 'still poisoned');
+});
+test('力の盾: +3 attack', () => {
+  const g = setup(); const a = playerAtk(g.player);
+  equipItem(g, give(g, 's_power_shield')); eq(playerAtk(g.player), a + 3);
+});
+test('ミラーシールド: enemy spell is reflected', () => {
+  const g = setup(1, 0.0);
+  const m = spawn(g, 'wizard', 2, 0); // 同じ部屋、隣接していない → ギラ
+  const hp = g.player.hp; monsterAct(g, m);
+  assert(g.player.hp < hp, 'spell should hurt without shield');
+  g.player.hp = hp; equipItem(g, give(g, 's_mirror_shield'));
+  monsterAct(g, m); eq(g.player.hp, hp, 'mirror');
+  assert(g.messages.some(x => x.text.includes('はね返した')));
+});
+test('鉄の盾 / はぐれメタルの盾: defense values', () => {
+  const g = setup();
+  equipItem(g, give(g, 's_iron_shield')); eq(playerDef(g.player), 8);
+  equipItem(g, give(g, 's_metal_slime_shield')); eq(playerDef(g.player), 18);
+});
+
+// ---- 武器 --------------------------------------------------------------------
+test('祝福の杖: use = ホイミ (HP+25, MP-2)', () => {
+  const g = setup(); g.player.maxHp = 60; g.player.hp = 10; const mp = g.player.mp;
+  const w = give(g, 'w_blessed_staff'); useItem(g, w);
+  eq(g.player.hp, 35); eq(g.player.mp, mp - 2 + 0);
+});
+test('聖なるナイフ: x1.5 vs undead, normal vs others', () => {
+  const g = setup(1, 0.0); equipItem(g, give(g, 'w_holy_knife'));
+  const sk = spawn(g, 'skeleton', 1, 0); g.attack(); const d1 = sk.maxHp - sk.hp;
+  g.monsters = []; const sl = spawn(g, 'slime', 1, 0); sl.def = { ...MONSTERS.skeleton, undead: false }; sl.maxHp = 99; sl.hp = 99; g.attack();
+  const d2 = 99 - sl.hp;
+  eq(d1, Math.floor(d2 * 1.5), `undead ${d1} vs normal ${d2}`);
+});
+test('クロスボウ: shoots an arrow up to 10 tiles and consumes it', () => {
+  const g = setup(1, 0.0); const bow = give(g, 'w_crossbow'); equipItem(g, bow);
+  const arrows = give(g, 'i_arrows'); arrows.count = 3;
+  const m = spawn(g, 'slime', 2, 0); m.hp = 100; m.maxHp = 100;
+  useItem(g, bow); eq(arrows.count, 2, 'arrow consumed'); assert(m.hp < 100, 'hit at range 2');
+});
+test('鉄の槍 / ホーリーランス: reach 2 tiles', () => {
+  const g = setup(1, 0.0); equipItem(g, give(g, 'w_iron_spear'));
+  const m = spawn(g, 'slime', 2, 0); m.hp = 100; m.maxHp = 100; g.attack(); assert(m.hp < 100, 'spear reach');
+  equipItem(g, give(g, 'w_holy_lance')); const sk = spawn(g, 'skeleton', 2, 0); g.monsters = [sk]; sk.hp = 100; sk.maxHp = 100; g.attack();
+  assert(sk.hp < 100 && g.messages.some(x => x.text.includes('アンデッド')), 'lance reach + undead');
+  equipItem(g, give(g, 'w_club')); const far = spawn(g, 'slime', 2, 0); g.monsters = [far]; far.hp = 100; g.attack(); eq(far.hp, 100, 'club cannot reach 2');
+});
+test('微笑みの杖: 50% sleep (rng fixed → success), MP-2', () => {
+  const g = setup(1, 0.0); const w = give(g, 'w_smile_staff'); const m = spawn(g, 'slime', 1, 0); const mp = g.player.mp;
+  useItem(g, w); assert(m.status.sleep > 0, 'asleep'); eq(g.player.mp, mp - 2);
+});
+test('天罰の杖: バギマ hits 3 front tiles, MP-5', () => {
+  const g = setup(1, 0.0); const w = give(g, 'w_wrath_staff'); const mp = g.player.mp;
+  const a = spawn(g, 'slime', 1, 0), b = spawn(g, 'slime', 1, 1), c = spawn(g, 'slime', 1, -1), d = spawn(g, 'slime', 0, 1);
+  for (const m of [a, b, c, d]) { m.hp = 100; m.maxHp = 100; }
+  useItem(g, w); assert(a.hp < 100 && b.hp < 100 && c.hp < 100, 'front 3 hit'); eq(d.hp, 100, 'side not hit'); eq(g.player.mp, mp - 5);
+});
+test('魔封じの杖: マホトーン seals skill, MP-5', () => {
+  const g = setup(1, 0.0); const w = give(g, 'w_seal_staff'); const m = spawn(g, 'dracky', 1, 0); const mp = g.player.mp;
+  useItem(g, w); assert(m.status.mahotone > 0); eq(g.player.mp, mp - 5);
+  // 封印中はラリホーを使わず通常攻撃になる
+  const hp = g.player.hp; monsterAct(g, m); assert(!(g.player.status.sleep > 0), 'no sleep while sealed');
+});
+test('理力の杖: consumes 1 MP for x1.5 damage, plain when MP is 0', () => {
+  const g = setup(1, 0.0); equipItem(g, give(g, 'w_mind_staff'));
+  const m = spawn(g, 'slime', 1, 0); m.hp = 200; m.maxHp = 200; const mp = g.player.mp;
+  g.attack(); const d1 = 200 - m.hp; eq(g.player.mp, mp - 1, 'mp used');
+  g.player.mp = 0; m.hp = 200; g.attack(); const d2 = 200 - m.hp; eq(g.player.mp, 0);
+  assert(d1 > d2, `boosted ${d1} > plain ${d2}`);
+});
+test('マグマの杖: イオ hits every monster in the room, MP-10', () => {
+  const g = setup(1, 0.0); g.player.mp = 20; const w = give(g, 'w_magma_staff');
+  const a = spawn(g, 'slime', 1, 0), b = spawn(g, 'slime', 2, 1); for (const m of [a, b]) { m.hp = 100; m.maxHp = 100; }
+  useItem(g, w); assert(a.hp < 100 && b.hp < 100); eq(g.player.mp, 10);
+});
+test('奇跡の剣: heals on hit', () => {
+  const g = setup(1, 0.0); equipItem(g, give(g, 'w_miracle_sword')); g.player.maxHp = 50; g.player.hp = 20;
+  const m = spawn(g, 'slime', 1, 0); m.hp = 100; m.maxHp = 100; m.status.sleep = 9; g.attack(); assert(g.player.hp > 20, 'hp ' + g.player.hp);
+});
+test('はぐれメタルの剣 / くさりがま / 銅の剣 / こんぼう / ひのきのぼう: attack values', () => {
+  const g = setup();
+  for (const [id, atk] of [['w_metal_slime_sword', 22], ['w_chain_sickle', 8], ['w_copper_sword', 6], ['w_club', 4], ['w_cypress_stick', 2]]) {
+    equipItem(g, give(g, id)); eq(playerAtk(g.player), g.player.str + atk, id);
+  }
+});
+test('throw: item flies and hits a monster', () => {
+  const g = setup(1, 0.0); const it = give(g, 'w_club'); const m = spawn(g, 'slime', 2, 0); m.hp = 100; m.maxHp = 100; m.status.sleep = 9;
+  throwItem(g, it); assert(m.hp < 100); eq(g.player.inventory.length, 0);
+});
+
+// ---- 呪文 ----------------------------------------------------------------------
+test('spells: learned by level', () => {
+  eq(SPELLS.find(s => s.id === 'hoimi').lv, 1); eq(SPELLS.find(s => s.id === 'zaraki').lv, 16);
+});
+test('ホイミ / ベホイミ / スカラ / バイキルト / ザキ / ザラキ', () => {
+  const g = setup(1, 0.0); g.player.lv = 16; g.player.maxMp = 99; g.player.mp = 99; g.player.maxHp = 200; g.player.hp = 10;
+  const sp = id => SPELLS.find(s => s.id === id);
+  castSpell(g, sp('hoimi')); eq(g.player.hp, 35, 'hoimi');
+  castSpell(g, sp('behoimi')); assert(g.player.hp >= 95 && g.player.hp <= 97, 'behoimi ' + g.player.hp); g.player.hp = 95;
+  const def = playerDef(g.player); castSpell(g, sp('sukara')); assert(playerDef(g.player) > def, 'sukara');
+  const atk = playerAtk(g.player); castSpell(g, sp('baikiruto')); eq(playerAtk(g.player), atk * 2, 'baikiruto');
+  const m = spawn(g, 'slime', 1, 0); castSpell(g, sp('zaki')); eq(g.monsters.length, 0, 'zaki kills (rng fixed)');
+  const u = spawn(g, 'skeleton', 1, 0); castSpell(g, sp('zaki')); eq(g.monsters.length, 1, 'zaki fails on undead');
+  g.monsters = []; spawn(g, 'slime', 1, 0); spawn(g, 'slime', 2, 0); castSpell(g, sp('zaraki')); eq(g.monsters.length, 0, 'zaraki');
+  const spent = 99 - 3 - 6 - 3 - 4 - 5 - 5 - 10; assert(g.player.mp >= spent && g.player.mp <= spent + 2, 'mp total ' + g.player.mp); // 自然回復分の誤差
+});
+test('MP shortage blocks spell', () => {
+  const g = setup(); g.player.mp = 0; const ok = castSpell(g, SPELLS[0]); eq(ok, false);
+});
+
+// ---- 進行 ---------------------------------------------------------------------
+test('B10F has キラーピアス; pick up → return trip → clear', () => {
+  const g = setup(1, null);
+  g.enterFloor(10);
+  const it = g.items.find(i => i.item.id === 'i_killer_pierce'); assert(it, 'pierce on 10F');
+  assert(g.map.stairs.up, '10F stairs go up');
+  g.player.x = it.x; g.player.y = it.y; g.afterStep();
+  assert(g.hasPierce && g.returning, 'obtained');
+  for (let f = 10; f >= 2; f--) { g.player.x = g.map.stairs.x; g.player.y = g.map.stairs.y; g.useStairs(); eq(g.floor, f - 1); assert(g.map.stairs.up); }
+  g.player.x = g.map.stairs.x; g.player.y = g.map.stairs.y; g.useStairs(); eq(g.state, 'clear');
+});
+test('level up grows HP/MP and learns spells', () => {
+  const g = setup(1, 0.5); const hp = g.player.maxHp, mp = g.player.maxMp;
+  g.gainExp(EXP_TABLE[4]); eq(g.player.lv, 4); assert(g.player.maxHp > hp && g.player.maxMp > mp);
+  assert(g.messages.some(m => m.text.includes('スカラを覚えた')));
+});
+test('hunger: 0 → HP damage each turn', () => {
+  const g = setup(); g.player.hunger = 0; const hp = g.player.hp; g.rest(); eq(g.player.hp, hp - 1);
+});
+test('death → state dead', () => {
+  const g = setup(1, 0.0); g.player.hp = 1; const m = spawn(g, 'hammerhood', 1, 0); m.dir = 'left'; g.rest(); eq(g.state, 'dead');
+});
+
+window.__results = results;
+window.__done = true;
+</script>
+</body>
+</html>
