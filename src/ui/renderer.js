@@ -69,26 +69,36 @@ export class Renderer {
       const vis = game.visible[i] === 1;
       let t;
       const isFloor = map.tiles[i] === FLOOR;
-      if (isFloor) t = getTile('floor' + this.floorVariant[i]);
-      else {
-        // 床に接する壁だけ描く。形はオートタイルではなく均一な石にして通路の輪郭をまっすぐ見せる
-        if (!wallTileName(map, x, y)) continue;
-        t = getTile(((x * 7 + y * 13) % 5 === 0) ? 'wall_solid1' : 'wall_solid0');
-      }
-      ctx.drawImage(t.img, t.sx, t.sy, t.size, t.size, x * TILE, y * TILE, TILE, TILE);
+      const px = x * TILE, py = y * TILE;
       if (isFloor) {
+        t = getTile('floor' + this.floorVariant[i]);
+        ctx.drawImage(t.img, t.sx, t.sy, t.size, t.size, px, py, TILE, TILE);
         // 通路は部屋より暗くして区別、1 マスごとに薄いグリッド
-        if (map.roomId[i] < 0) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
+        if (map.roomId[i] < 0) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(px, py, TILE, TILE); }
         ctx.fillStyle = 'rgba(0,0,0,0.28)';
-        ctx.fillRect(x * TILE, y * TILE, TILE, 1);
-        ctx.fillRect(x * TILE, y * TILE, 1, TILE);
+        ctx.fillRect(px, py, TILE, 1);
+        ctx.fillRect(px, py, 1, TILE);
       } else {
-        // 壁と床の境目に濃い線
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        if (map.isFloor(x, y + 1)) ctx.fillRect(x * TILE, y * TILE + TILE - 2, TILE, 2);
-        if (map.isFloor(x, y - 1)) ctx.fillRect(x * TILE, y * TILE, TILE, 2);
-        if (map.isFloor(x + 1, y)) ctx.fillRect(x * TILE + TILE - 2, y * TILE, 2, TILE);
-        if (map.isFloor(x - 1, y)) ctx.fillRect(x * TILE, y * TILE, 2, TILE);
+        // トルネコ風: 全ての壁をブロックとして描く。下が床なら「正面」、それ以外は「上面」
+        t = getTile(((x * 7 + y * 13) % 5 === 0) ? 'wall_solid1' : 'wall_solid0');
+        ctx.drawImage(t.img, t.sx, t.sy, t.size, t.size, px, py, TILE, TILE);
+        if (map.isFloor(x, y + 1)) {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(px, py, TILE, TILE);           // 正面は影
+          ctx.fillStyle = 'rgba(0,0,0,0.35)';                                             // 石積みの横目地
+          for (let ly = 8; ly < TILE; ly += 8) ctx.fillRect(px, py + ly, TILE, 1);
+          ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fillRect(px, py, TILE, 2);       // 上端のハイライト(角)
+          ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(px, py + TILE - 2, TILE, 2);   // 床との境目
+        } else {
+          ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(px, py, TILE, TILE);   // 上面は明るめ
+          if (map.isFloor(x, y - 1)) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(px, py, TILE, 2); }
+        }
+        // 左右が床なら側面の縁
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        if (map.isFloor(x + 1, y)) ctx.fillRect(px + TILE - 2, py, 2, TILE);
+        if (map.isFloor(x - 1, y)) ctx.fillRect(px, py, 2, TILE);
+        // 上面のブロック目地
+        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+        ctx.fillRect(px, py, TILE, 1); ctx.fillRect(px, py, 1, TILE);
       }
       // 見えていない所は薄暗く。未探索はさらに暗いが輪郭は分かる
       if (!vis) { ctx.fillStyle = map.explored[i] ? 'rgba(0,0,0,0.42)' : 'rgba(0,0,0,0.62)'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
