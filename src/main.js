@@ -91,7 +91,7 @@ function autoplayStep() {
     if (herb) { F.useItem(game, herb); return; }
     const sp = F.spellsForLevel(p.lv).filter(x => x.target === 'self' && x.id.includes('hoimi') && p.mp >= x.mp).pop();
     if (sp) { F.castSpell(game, sp); return; }
-    if (p.weapon && defOf(p.weapon).use && defOf(p.weapon).use.effect === 'hoimi' && p.mp >= 2) { F.useItem(game, p.weapon); return; }
+    if (p.weapon && defOf(p.weapon).use && defOf(p.weapon).use.effect === 'hoimi' && p.mp >= defOf(p.weapon).use.mp) { F.useItem(game, p.weapon); return; }
   }
   if (p.hunger < 30) { const food = inv.find(i => defOf(i).effect === 'food'); if (food) { F.useItem(game, food); return; } }
   if (p.status.poison > 0) { const a = inv.find(i => defOf(i).effect === 'cure_poison'); if (a) { F.useItem(game, a); return; } }

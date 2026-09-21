@@ -10,8 +10,8 @@ export function castSpell(game, spell) {
   p.anim.bump = { dir: p.dir, t0: performance.now() };
   game.log(`クリフトは${spell.name}を唱えた！`);
   switch (spell.id) {
-    case 'hoimi': heal(game, 25); break;
-    case 'behoimi': heal(game, 60); break;
+    case 'hoimi': heal(game, 15); break;
+    case 'behoimi': heal(game, 45); break;
     case 'sukara': p.status.sukara = 20; game.log('守備力が上がった！'); break;
     case 'baikiruto': p.status.baikiruto = 15; game.log('攻撃力が上がった！'); break;
     case 'zaki': {
@@ -42,5 +42,7 @@ function heal(game, n) {
   const p = game.player;
   const h = Math.min(n, p.maxHp - p.hp);
   p.hp += h;
+  game.effect('heal', p.x, p.y);
+  if (h > 0) game.popup(p.x, p.y, `+${h}`, '#8f8');
   game.log(h > 0 ? `HPが${h}回復した。` : 'HPは満タンだ。');
 }

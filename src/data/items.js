@@ -4,7 +4,7 @@
 export const ITEMS = {
   // ---- 武器 ----
   w_cypress_stick:    { kind: 'weapon', name: 'ひのきのぼう',     atk: 2,  floors: [1, 4],  w: 10 },
-  w_blessed_staff:    { kind: 'weapon', name: '祝福の杖',         atk: 3,  floors: [1, 6],  w: 6,  use: { mp: 2,  effect: 'hoimi' },    desc: 'つかう: ホイミ(MP2)' },
+  w_blessed_staff:    { kind: 'weapon', name: '祝福の杖',         atk: 3,  floors: [1, 6],  w: 6,  use: { mp: 5,  effect: 'hoimi' },    desc: 'つかう: ホイミ HP+12(MP5)' },
   w_club:             { kind: 'weapon', name: 'こんぼう',         atk: 4,  floors: [1, 5],  w: 9 },
   w_copper_sword:     { kind: 'weapon', name: '銅の剣',           atk: 6,  floors: [2, 7],  w: 8 },
   w_holy_knife:       { kind: 'weapon', name: '聖なるナイフ',     atk: 5,  floors: [2, 8],  w: 6,  passive: 'undead', desc: 'アンデッドに大ダメージ' },
@@ -12,11 +12,11 @@ export const ITEMS = {
   w_chain_sickle:     { kind: 'weapon', name: 'くさりがま',       atk: 8,  floors: [3, 9],  w: 6 },
   w_iron_spear:       { kind: 'weapon', name: '鉄の槍',           atk: 9,  floors: [4, 10], w: 6,  passive: 'range2', desc: '2マス先まで攻撃' },
   w_holy_lance:       { kind: 'weapon', name: 'ホーリーランス',   atk: 12, floors: [6, 10], w: 3,  passive: 'range2_undead', desc: '2マス先まで・アンデッド特攻' },
-  w_smile_staff:      { kind: 'weapon', name: '微笑みの杖',       atk: 6,  floors: [4, 10], w: 1,  use: { mp: 2,  effect: 'sleep' },    desc: 'つかう: 50%で敵を眠らせる(MP2)' },
-  w_wrath_staff:      { kind: 'weapon', name: '天罰の杖',         atk: 7,  floors: [4, 10], w: 4,  use: { mp: 5,  effect: 'bagima' },   desc: 'つかう: バギマ 前方3方向(MP5)' },
-  w_seal_staff:       { kind: 'weapon', name: '魔封じの杖',       atk: 7,  floors: [4, 10], w: 4,  use: { mp: 5,  effect: 'mahotone' }, desc: 'つかう: 敵の特技を封じる(MP5)' },
+  w_smile_staff:      { kind: 'weapon', name: '微笑みの杖',       atk: 6,  floors: [4, 10], w: 1,  use: { mp: 5,  effect: 'sleep' },    desc: 'つかう: 50%で敵を眠らせる(MP5)' },
+  w_wrath_staff:      { kind: 'weapon', name: '天罰の杖',         atk: 7,  floors: [4, 10], w: 4,  use: { mp: 8,  effect: 'bagima' },   desc: 'つかう: バギマ 前方3方向(MP8)' },
+  w_seal_staff:       { kind: 'weapon', name: '魔封じの杖',       atk: 7,  floors: [4, 10], w: 4,  use: { mp: 7,  effect: 'mahotone' }, desc: 'つかう: 敵の特技を封じる(MP7)' },
   w_mind_staff:       { kind: 'weapon', name: '理力の杖',         atk: 8,  floors: [5, 10], w: 4,  passive: 'mind', desc: '攻撃時MP1消費でダメージ増' },
-  w_magma_staff:      { kind: 'weapon', name: 'マグマの杖',       atk: 8,  floors: [6, 10], w: 3,  use: { mp: 10, effect: 'io' },       desc: 'つかう: イオ 部屋全体(MP10)' },
+  w_magma_staff:      { kind: 'weapon', name: 'マグマの杖',       atk: 8,  floors: [6, 10], w: 3,  use: { mp: 14, effect: 'io' },       desc: 'つかう: イオ 部屋全体(MP14)' },
   w_miracle_sword:    { kind: 'weapon', name: '奇跡の剣',         atk: 14, floors: [7, 10], w: 2,  passive: 'miracle', desc: '攻撃するたびHP回復' },
   w_metal_slime_sword:{ kind: 'weapon', name: 'はぐれメタルの剣', atk: 22, floors: [8, 10], w: 1 },
   // ---- 盾 ----

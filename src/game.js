@@ -19,6 +19,7 @@ export class Game {
     this.state = 'title';       // title | play | dead | clear
     this.messages = [];         // {text, turn}
     this.popups = [];           // {x,y,text,color,t0}
+    this.effects = [];          // {type,x,y,t0} 回復などの演出
     this.onEvent = () => {};    // UI へ通知 (levelup など)
   }
 
@@ -63,7 +64,7 @@ export class Game {
       && !(x === this.map.stairs.x && y === this.map.stairs.y);
     // 敵
     const table = monstersForFloor(n);
-    const count = rng.int(3, 6);
+    const count = rng.int(4, 6);
     for (let i = 0; i < count; i++) {
       const spot = this.map.randomFloor(rng, (x, y) => free(x, y) && this.map.room(x, y) !== this.map.room(this.player.x, this.player.y));
       if (!spot) break;
@@ -72,7 +73,7 @@ export class Game {
     }
     // アイテム
     const itable = itemsForFloor(n);
-    const icount = rng.int(3, 6);
+    const icount = rng.int(2, 4);
     for (let i = 0; i < icount; i++) {
       const spot = this.map.randomFloor(rng, (x, y) => free(x, y) && this.map.room(x, y) >= 0);
       if (!spot) break;
@@ -98,6 +99,7 @@ export class Game {
   // ---- ログ・演出 --------------------------------------------------------
   log(text) { this.messages.push({ text, turn: this.turn, t: performance.now() }); if (this.messages.length > 200) this.messages.shift(); }
   popup(x, y, text, color) { this.popups.push({ x, y, text, color, t0: performance.now() }); }
+  effect(type, x, y) { this.effects.push({ type, x, y, t0: performance.now() }); }
 
   moveEntity(e, x, y) {
     e.anim.fromX = e.x; e.anim.fromY = e.y; e.anim.moveT0 = performance.now(); e.anim.walking = true;

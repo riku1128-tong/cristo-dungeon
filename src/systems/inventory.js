@@ -22,7 +22,7 @@ export function useItem(game, item) {
   switch (def.effect) {
     case 'heal': {
       if (p.hp >= p.maxHp) { p.maxHp += def.amount >= 80 ? 2 : 1; p.hp = p.maxHp; game.log(`最大HPが上がった！`); }
-      else { const h = Math.min(def.amount, p.maxHp - p.hp); p.hp += h; game.log(`HPが${h}回復した。`); }
+      else { const h = Math.min(def.amount, p.maxHp - p.hp); p.hp += h; game.effect('heal', p.x, p.y); game.popup(p.x, p.y, `+${h}`, '#8f8'); game.log(`HPが${h}回復した。`); }
       p.hunger = Math.min(p.maxHunger, p.hunger + 5);
       break;
     }
@@ -93,7 +93,7 @@ function useWeapon(game, item) {
   switch (effect) {
     case 'hoimi': {
       game.log('祝福の杖をかざした。ホイミ！');
-      const h = Math.min(25, p.maxHp - p.hp); p.hp += h; game.log(`HPが${h}回復した。`);
+      const h = Math.min(12, p.maxHp - p.hp); p.hp += h; game.effect('heal', p.x, p.y); game.popup(p.x, p.y, `+${h}`, '#8f8'); game.log(`HPが${h}回復した。`);
       break;
     }
     case 'sleep': {

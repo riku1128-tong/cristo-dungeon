@@ -47,6 +47,7 @@ export class Renderer {
     this.drawObjects(game);
     const ents = [...game.monsters.filter(m => game.isVisible(m.x, m.y)), p].sort((a, b) => a.vy - b.vy);
     for (const e of ents) this.drawEntity(game, e, now);
+    this.drawEffects(game, now);
     this.drawPopups(game, now);
     ctx.restore();
 
@@ -171,6 +172,33 @@ export class Renderer {
         ctx.fillStyle = '#000'; ctx.fillRect(x - 1, y - 1, w + 2, 4);
         ctx.fillStyle = '#e33'; ctx.fillRect(x, y, Math.max(1, Math.round(w * e.hp / e.maxHp)), 2);
       }
+    }
+  }
+
+  // 回復エフェクト: 緑の光の粒が舞い上がり、足元に光の輪
+  drawEffects(game, now) {
+    const ctx = this.ctx;
+    const DUR = 750;
+    game.effects = game.effects.filter(e => now - e.t0 < DUR);
+    for (const e of game.effects) {
+      if (e.type !== 'heal') continue;
+      const t = (now - e.t0) / DUR;
+      const cx = e.x * TILE + TILE / 2, cy = e.y * TILE + TILE / 2;
+      ctx.save();
+      ctx.globalAlpha = 1 - t;
+      ctx.strokeStyle = '#8f8';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(cx, cy + 10, 8 + t * 18, 4 + t * 8, 0, 0, Math.PI * 2); ctx.stroke();
+      for (let i = 0; i < 10; i++) {
+        const a = i * 0.63 + e.t0 * 0.001;
+        const r = 6 + (i % 3) * 5;
+        const px = cx + Math.cos(a) * r, py = cy + 12 - t * (34 + (i % 4) * 8) + Math.sin(a) * 3;
+        const sz = i % 2 ? 3 : 2;
+        ctx.fillStyle = i % 3 === 0 ? '#fff' : '#7f7';
+        ctx.fillRect(Math.round(px), Math.round(py), sz, sz);
+        ctx.fillRect(Math.round(px) - 1, Math.round(py) + 1, 1, 1);
+      }
+      ctx.restore();
     }
   }
 

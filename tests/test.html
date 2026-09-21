@@ -147,10 +147,10 @@ test('鉄の盾 / はぐれメタルの盾: defense values', () => {
 });
 
 // ---- 武器 --------------------------------------------------------------------
-test('祝福の杖: use = ホイミ (HP+25, MP-2)', () => {
+test('祝福の杖: use = ホイミ (HP+12, MP-5)', () => {
   const g = setup(); g.player.maxHp = 60; g.player.hp = 10; const mp = g.player.mp;
   const w = give(g, 'w_blessed_staff'); useItem(g, w);
-  eq(g.player.hp, 35); eq(g.player.mp, mp - 2 + 0);
+  eq(g.player.hp, 22); eq(g.player.mp, mp - 5);
 });
 test('聖なるナイフ: x1.5 vs undead, normal vs others', () => {
   const g = setup(1, 0.0); equipItem(g, give(g, 'w_holy_knife'));
@@ -172,19 +172,19 @@ test('鉄の槍 / ホーリーランス: reach 2 tiles', () => {
   assert(sk.hp < 100 && g.messages.some(x => x.text.includes('アンデッド')), 'lance reach + undead');
   equipItem(g, give(g, 'w_club')); const far = spawn(g, 'slime', 2, 0); g.monsters = [far]; far.hp = 100; g.attack(); eq(far.hp, 100, 'club cannot reach 2');
 });
-test('微笑みの杖: 50% sleep (rng fixed → success), MP-2', () => {
+test('微笑みの杖: 50% sleep (rng fixed → success), MP-5', () => {
   const g = setup(1, 0.0); const w = give(g, 'w_smile_staff'); const m = spawn(g, 'slime', 1, 0); const mp = g.player.mp;
-  useItem(g, w); assert(m.status.sleep > 0, 'asleep'); eq(g.player.mp, mp - 2);
+  useItem(g, w); assert(m.status.sleep > 0, 'asleep'); eq(g.player.mp, mp - 5);
 });
-test('天罰の杖: バギマ hits 3 front tiles, MP-5', () => {
-  const g = setup(1, 0.0); const w = give(g, 'w_wrath_staff'); const mp = g.player.mp;
+test('天罰の杖: バギマ hits 3 front tiles, MP-8', () => {
+  const g = setup(1, 0.0); g.player.mp = 20; const w = give(g, 'w_wrath_staff'); const mp = g.player.mp;
   const a = spawn(g, 'slime', 1, 0), b = spawn(g, 'slime', 1, 1), c = spawn(g, 'slime', 1, -1), d = spawn(g, 'slime', 0, 1);
   for (const m of [a, b, c, d]) { m.hp = 100; m.maxHp = 100; }
-  useItem(g, w); assert(a.hp < 100 && b.hp < 100 && c.hp < 100, 'front 3 hit'); eq(d.hp, 100, 'side not hit'); eq(g.player.mp, mp - 5);
+  useItem(g, w); assert(a.hp < 100 && b.hp < 100 && c.hp < 100, 'front 3 hit'); eq(d.hp, 100, 'side not hit'); eq(g.player.mp, mp - 8);
 });
-test('魔封じの杖: マホトーン seals skill, MP-5', () => {
-  const g = setup(1, 0.0); const w = give(g, 'w_seal_staff'); const m = spawn(g, 'dracky', 1, 0); const mp = g.player.mp;
-  useItem(g, w); assert(m.status.mahotone > 0); eq(g.player.mp, mp - 5);
+test('魔封じの杖: マホトーン seals skill, MP-7', () => {
+  const g = setup(1, 0.0); g.player.mp = 20; const w = give(g, 'w_seal_staff'); const m = spawn(g, 'dracky', 1, 0); const mp = g.player.mp;
+  useItem(g, w); assert(m.status.mahotone > 0); eq(g.player.mp, mp - 7);
   // 封印中はラリホーを使わず通常攻撃になる
   const hp = g.player.hp; monsterAct(g, m); assert(!(g.player.status.sleep > 0), 'no sleep while sealed');
 });
@@ -195,10 +195,10 @@ test('理力の杖: consumes 1 MP for x1.5 damage, plain when MP is 0', () => {
   g.player.mp = 0; m.hp = 200; g.attack(); const d2 = 200 - m.hp; eq(g.player.mp, 0);
   assert(d1 > d2, `boosted ${d1} > plain ${d2}`);
 });
-test('マグマの杖: イオ hits every monster in the room, MP-10', () => {
+test('マグマの杖: イオ hits every monster in the room, MP-14', () => {
   const g = setup(1, 0.0); g.player.mp = 20; const w = give(g, 'w_magma_staff');
   const a = spawn(g, 'slime', 1, 0), b = spawn(g, 'slime', 2, 1); for (const m of [a, b]) { m.hp = 100; m.maxHp = 100; }
-  useItem(g, w); assert(a.hp < 100 && b.hp < 100); eq(g.player.mp, 10);
+  useItem(g, w); assert(a.hp < 100 && b.hp < 100); eq(g.player.mp, 6);
 });
 test('奇跡の剣: heals on hit', () => {
   const g = setup(1, 0.0); equipItem(g, give(g, 'w_miracle_sword')); g.player.maxHp = 50; g.player.hp = 20;
@@ -222,14 +222,14 @@ test('spells: learned by level', () => {
 test('ホイミ / ベホイミ / スカラ / バイキルト / ザキ / ザラキ', () => {
   const g = setup(1, 0.0); g.player.lv = 16; g.player.maxMp = 99; g.player.mp = 99; g.player.maxHp = 200; g.player.hp = 10;
   const sp = id => SPELLS.find(s => s.id === id);
-  castSpell(g, sp('hoimi')); eq(g.player.hp, 35, 'hoimi');
-  castSpell(g, sp('behoimi')); assert(g.player.hp >= 95 && g.player.hp <= 97, 'behoimi ' + g.player.hp); g.player.hp = 95;
+  castSpell(g, sp('hoimi')); eq(g.player.hp, 25, 'hoimi');
+  castSpell(g, sp('behoimi')); assert(g.player.hp >= 70 && g.player.hp <= 72, 'behoimi ' + g.player.hp); g.player.hp = 70;
   const def = playerDef(g.player); castSpell(g, sp('sukara')); assert(playerDef(g.player) > def, 'sukara');
   const atk = playerAtk(g.player); castSpell(g, sp('baikiruto')); eq(playerAtk(g.player), atk * 2, 'baikiruto');
   const m = spawn(g, 'slime', 1, 0); castSpell(g, sp('zaki')); eq(g.monsters.length, 0, 'zaki kills (rng fixed)');
   const u = spawn(g, 'skeleton', 1, 0); castSpell(g, sp('zaki')); eq(g.monsters.length, 1, 'zaki fails on undead');
   g.monsters = []; spawn(g, 'slime', 1, 0); spawn(g, 'slime', 2, 0); castSpell(g, sp('zaraki')); eq(g.monsters.length, 0, 'zaraki');
-  eq(g.player.mp, 99 - 3 - 6 - 3 - 4 - 5 - 5 - 10, 'mp total (no natural regen)');
+  eq(g.player.mp, 99 - 4 - 9 - 4 - 6 - 7 - 7 - 14, 'mp total (no natural regen)');
 });
 test('MP shortage blocks spell', () => {
   const g = setup(); g.player.mp = 0; const ok = castSpell(g, SPELLS[0]); eq(ok, false);
