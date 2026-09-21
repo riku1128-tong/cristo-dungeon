@@ -38,7 +38,7 @@ export function playerHit(game, m, mult = 1) {
   let note = '';
   if (passive === 'mind' && p.mp >= 1) { p.mp -= 1; mult *= 1.5; note = '理力の杖が光る！ '; }
   let dmg = calcDamage(rng, atk, m.def.def);
-  if ((passive === 'undead' || passive === 'range2_undead') && m.def.undead) { dmg = Math.floor(dmg * 1.5); note = '聖なる力がアンデッドを焼く！ '; }
+  if (passive === 'undead' && m.def.undead) { dmg = Math.floor(dmg * 1.5); note = '聖なる力がアンデッドを焼く！ '; }
   dmg = Math.max(1, Math.floor(dmg * mult));
   if (m.def.metal) dmg = rng.chance(0.5) ? 1 : (rng.chance(0.3) ? 2 : 0);
   if (passive === 'miracle') p.hp = Math.min(p.maxHp, p.hp + rng.int(1, 2));

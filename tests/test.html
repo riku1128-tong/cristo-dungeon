@@ -165,12 +165,12 @@ test('クロスボウ: shoots an arrow up to 10 tiles and consumes it', () => {
   const m = spawn(g, 'slime', 2, 0); m.hp = 100; m.maxHp = 100;
   useItem(g, bow); eq(arrows.count, 2, 'arrow consumed'); assert(m.hp < 100, 'hit at range 2');
 });
-test('鉄の槍 / ホーリーランス: reach 2 tiles', () => {
+test('鉄の槍 / ホーリーランス: no reach, lance is anti-undead', () => {
   const g = setup(1, 0.0); equipItem(g, give(g, 'w_iron_spear'));
-  const m = spawn(g, 'slime', 2, 0); m.hp = 100; m.maxHp = 100; g.attack(); assert(m.hp < 100, 'spear reach');
-  equipItem(g, give(g, 'w_holy_lance')); const sk = spawn(g, 'skeleton', 2, 0); g.monsters = [sk]; sk.hp = 100; sk.maxHp = 100; g.attack();
-  assert(sk.hp < 100 && g.messages.some(x => x.text.includes('アンデッド')), 'lance reach + undead');
-  equipItem(g, give(g, 'w_club')); const far = spawn(g, 'slime', 2, 0); g.monsters = [far]; far.hp = 100; g.attack(); eq(far.hp, 100, 'club cannot reach 2');
+  const far = spawn(g, 'slime', 2, 0); far.hp = 100; far.maxHp = 100; g.attack(); eq(far.hp, 100, 'spear cannot reach 2');
+  eq(playerAtk(g.player), g.player.str + 9, 'spear atk');
+  equipItem(g, give(g, 'w_holy_lance')); g.monsters = []; const sk = spawn(g, 'skeleton', 1, 0); sk.hp = 100; sk.maxHp = 100; g.attack();
+  assert(sk.hp < 100 && g.messages.some(x => x.text.includes('アンデッド')), 'lance undead bonus');
 });
 test('微笑みの杖: 50% sleep (rng fixed → success), MP-5', () => {
   const g = setup(1, 0.0); const w = give(g, 'w_smile_staff'); const m = spawn(g, 'slime', 1, 0); const mp = g.player.mp;

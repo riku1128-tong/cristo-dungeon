@@ -8,7 +8,7 @@ import { monstersForFloor } from './data/monsters.js';
 import { itemsForFloor, makeItem, ITEMS } from './data/items.js';
 import { EXP_TABLE, MAX_LV, growth } from './data/levels.js';
 import { SPELLS } from './data/spells.js';
-import { playerHit, weaponPassive, damagePlayer } from './systems/combat.js';
+import { playerHit, damagePlayer } from './systems/combat.js';
 import { monsterAct } from './systems/ai.js';
 import { setTileset } from './assets.js';
 
@@ -183,21 +183,13 @@ export class Game {
     p.status.poison = Math.max(p.status.poison || 0, 10);
   }
 
-  // 前方攻撃（槍は 2 マス）
+  // 前方 1 マスを攻撃
   attack() {
     const p = this.player;
     const d = DIRS[p.dir];
     p.anim.bump = { dir: p.dir, t0: performance.now() };
-    const passive = weaponPassive(p);
-    const range = (passive === 'range2' || passive === 'range2_undead') ? 2 : 1;
-    let target = null;
-    for (let r = 1; r <= range; r++) {
-      const x = p.x + d.dx * r, y = p.y + d.dy * r;
-      if (r === 1 && !canStep(this.map, p.x, p.y, d.dx, d.dy) && !this.monsterAt(x, y)) break;
-      if (!this.map.isFloor(x, y)) break;
-      const m = this.monsterAt(x, y);
-      if (m) { target = m; break; }
-    }
+    const x = p.x + d.dx, y = p.y + d.dy;
+    const target = canStep(this.map, p.x, p.y, d.dx, d.dy) ? this.monsterAt(x, y) : null;
     if (target) playerHit(this, target);
     else this.log('クリフトは空を切った。');
     this.endPlayerTurn();

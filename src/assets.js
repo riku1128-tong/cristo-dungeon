@@ -211,12 +211,22 @@ const ICONS = {
     '......kyyk......', '......kyyyk.....', '.......kkk......', '................',
   ],
 };
+// 特定アイテム専用の仮アイコン
+const ICONS_BY_ID = {
+  // キラーピアス: 金のフープに三日月形の刃、赤い宝石
+  i_killer_pierce: [
+    '................', '.......ww.......', '......wyyw......', '......wyyw......',
+    '.......kk.......', '.....kkyykk.....', '....kyykkyyk....', '...kyyk..kyyk...',
+    '...kyk....kyk...', '...kyk...kyyk...', '...kyyk.kyyk....', '....kyyyyyk.....',
+    '.....kkrkk......', '......krrk......', '......krrk......', '.......kk.......',
+  ],
+};
 export function getItemIcon(iconId, kind) {
   const it = manifest.items[iconId];
   if (it && it.img) return { img: it.img, sx: it.x, sy: it.y, size: it.size };
-  const key = 'icon:' + kind;
+  const key = ICONS_BY_ID[iconId] ? 'icon:' + iconId : 'icon:' + kind;
   if (!fallbackCache.has(key)) {
-    fallbackCache.set(key, { img: pixelArt(ICONS[kind] || ICONS.key, ITEM_PAL, 2), sx: 0, sy: 0, size: TILE });
+    fallbackCache.set(key, { img: pixelArt(ICONS_BY_ID[iconId] || ICONS[kind] || ICONS.key, ITEM_PAL, 2), sx: 0, sy: 0, size: TILE });
   }
   return fallbackCache.get(key);
 }
