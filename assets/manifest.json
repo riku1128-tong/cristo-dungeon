@@ -1,0 +1,57 @@
+{
+  "sprites": {
+    "cristo": {
+      "file": "assets/sprites/cristo.png",
+      "cell": 48,
+      "frames": 4,
+      "dirs": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "source": "assets/raw/cristo/seed_101.png"
+    },
+    "slime": {
+      "file": "assets/sprites/slime.png",
+      "cell": 48,
+      "frames": 1,
+      "dirs": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "bounce": true,
+      "source": "assets/raw/slime/seed_201.png"
+    }
+  },
+  "tilesets": {
+    "dungeon_tiles": {
+      "file": "assets/tiles/dungeon_tiles.png",
+      "tile": 32,
+      "names": [
+        "floor0",
+        "floor1",
+        "floor2",
+        "wall_tl",
+        "wall_t",
+        "wall_tr",
+        "wall_l",
+        "wall_c",
+        "wall_r",
+        "wall_bl",
+        "wall_b",
+        "wall_br",
+        "wall_solid0",
+        "wall_solid1",
+        "wall_in_se",
+        "wall_in_sw",
+        "wall_in_ne",
+        "wall_in_nw"
+      ]
+    }
+  },
+  "objects": {},
+  "items": {}
+}

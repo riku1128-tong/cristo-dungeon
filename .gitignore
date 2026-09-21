@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+assets/raw/_contact/
+tools/.cache/
+Thumbs.db
+.DS_Store

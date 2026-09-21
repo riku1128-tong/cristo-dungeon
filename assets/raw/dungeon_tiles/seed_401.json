@@ -1,0 +1,19 @@
+{
+  "created_at": 1789987200,
+  "credit_cost": 10,
+  "balance_cost": 0.1,
+  "output_urls": [],
+  "model": "rd_fast",
+  "remaining_credits": 0,
+  "remaining_balance": 0.05,
+  "request_id": "44a83fd3-6afa-4de0-a36d-78e54e1345e6",
+  "outputs_retained_until": 1790073575,
+  "payload": {
+    "prompt": "underground stone dungeon, blue-gray brick walls with lit top faces, dark cobblestone floor, 16-bit SNES JRPG roguelike dungeon",
+    "prompt_style": "rd_tile__tileset",
+    "width": 32,
+    "height": 32,
+    "num_images": 1,
+    "seed": 401
+  }
+}

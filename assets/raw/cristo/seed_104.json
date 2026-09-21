@@ -1,0 +1,20 @@
+{
+  "created_at": 1789987079,
+  "credit_cost": 10,
+  "balance_cost": 0.07,
+  "output_urls": [],
+  "model": "rd_plus",
+  "remaining_credits": 0,
+  "remaining_balance": 0.22,
+  "request_id": "e6ca416b-bd78-4a83-b982-5961cc1453f9",
+  "outputs_retained_until": 1790073461,
+  "payload": {
+    "prompt": "young priest hero boy, green round dome helmet with gold rim, dark navy blue hair, green cloak and green tunic with white collar and gold trim, brown boots, brown gloves, holding a small wooden staff, determined expression, 16-bit SNES JRPG pixel art sprite, top-down RPG style, clean outline, flat solid colors, plain background",
+    "prompt_style": "rd_animation__four_angle_walking",
+    "width": 48,
+    "height": 48,
+    "num_images": 1,
+    "seed": 104,
+    "return_spritesheet": true
+  }
+}

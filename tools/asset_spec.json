@@ -1,0 +1,632 @@
+{
+  "_doc": "Asset declarations for gen_assets.py / build_sheets.py. kind: character | tileset | object | item. 'seeds' = one request per seed. 'pick' = seed chosen after visual review (null = first).",
+  "defaults": {
+    "character": {
+      "style": "rd_animation__four_angle_walking",
+      "width": 48,
+      "height": 48,
+      "return_spritesheet": true,
+      "layout": {
+        "order": [
+          "up",
+          "left",
+          "down",
+          "right"
+        ],
+        "frames": 4,
+        "mode": "rows"
+      }
+    },
+    "tileset": {
+      "style": "rd_tile__tileset",
+      "width": 32,
+      "height": 32
+    },
+    "object": {
+      "style": "rd_pro__topdown",
+      "width": 32,
+      "height": 32,
+      "remove_bg": true
+    },
+    "item": {
+      "style": "rd_plus__topdown_item",
+      "width": 32,
+      "height": 32,
+      "remove_bg": true
+    },
+    "static": {
+      "style": "rd_pro__default",
+      "width": 48,
+      "height": 48,
+      "remove_bg": true
+    }
+  },
+  "style_suffix": {
+    "character": ", 16-bit SNES JRPG pixel art sprite, top-down RPG style, clean outline, flat solid colors, plain background",
+    "object": ", 16-bit SNES JRPG dungeon pixel art, top-down view, clean outline, transparent background",
+    "item": ", 16-bit SNES JRPG item icon pixel art, clean dark outline, flat shading, transparent background",
+    "static": ", 16-bit SNES JRPG pixel art monster sprite, front view, full body, centered, clean outline, flat solid colors, transparent background"
+  },
+  "assets": [
+    {
+      "id": "cristo",
+      "kind": "character",
+      "seeds": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "pick": 101,
+      "prompt": "young priest hero boy, green round dome helmet with gold rim, dark navy blue hair, green cloak and green tunic with white collar and gold trim, brown boots, brown gloves, holding a small wooden staff, determined expression"
+    },
+    {
+      "id": "slime",
+      "kind": "static",
+      "seeds": [
+        201
+      ],
+      "prompt": "cute blue teardrop-shaped slime monster with big round eyes and a cheerful smile, glossy"
+    },
+    {
+      "id": "hammerhood",
+      "kind": "character",
+      "seeds": [
+        211,
+        212
+      ],
+      "prompt": "small brown furry goblin creature with big ears and a stubby body, holding a large wooden mallet over its shoulder"
+    },
+    {
+      "id": "dracky",
+      "kind": "character",
+      "seeds": [
+        221,
+        222
+      ],
+      "prompt": "small purple bat monster with big eyes, tiny fangs and wide wings, flying"
+    },
+    {
+      "id": "bubble_slime",
+      "kind": "static",
+      "seeds": [
+        231
+      ],
+      "prompt": "poisonous green-brown bubbling slime monster, drooping melting face, toxic bubbles"
+    },
+    {
+      "id": "skeleton",
+      "kind": "character",
+      "seeds": [
+        241,
+        242
+      ],
+      "prompt": "undead skeleton warrior with a rusty sword and a small round shield, glowing red eyes"
+    },
+    {
+      "id": "wizard",
+      "kind": "character",
+      "seeds": [
+        251,
+        252
+      ],
+      "prompt": "evil old wizard in a purple robe and tall pointed hat with a crooked wooden staff, white beard"
+    },
+    {
+      "id": "ghost",
+      "kind": "character",
+      "seeds": [
+        261,
+        262
+      ],
+      "prompt": "pale translucent ghost spirit with a tattered white cloak, hollow eyes, floating above the ground"
+    },
+    {
+      "id": "rotting_corpse",
+      "kind": "character",
+      "seeds": [
+        271,
+        272
+      ],
+      "prompt": "green rotting zombie with torn clothes, arms stretched forward, shambling walk"
+    },
+    {
+      "id": "mummy",
+      "kind": "character",
+      "seeds": [
+        281,
+        282
+      ],
+      "prompt": "mummy monster wrapped in loose white bandages, slow heavy walk, one glowing eye"
+    },
+    {
+      "id": "baby_satan",
+      "kind": "character",
+      "seeds": [
+        291,
+        292
+      ],
+      "prompt": "small red imp devil with tiny horns, bat wings, a pointed tail and a pitchfork, mischievous grin"
+    },
+    {
+      "id": "metal_slime",
+      "kind": "static",
+      "seeds": [
+        301
+      ],
+      "prompt": "shiny silver liquid-metal slime monster, teardrop shape, mirror-like reflective surface, small nervous face"
+    },
+    {
+      "id": "dungeon_tiles",
+      "kind": "tileset",
+      "seeds": [
+        401,
+        402
+      ],
+      "prompt": "underground stone dungeon, blue-gray brick walls with lit top faces, dark cobblestone floor, 16-bit SNES JRPG roguelike dungeon",
+      "pick": 401,
+      "tiles": {
+        "floor0": [
+          0,
+          0
+        ],
+        "floor1": [
+          0,
+          1
+        ],
+        "floor2": [
+          0,
+          2
+        ],
+        "wall_tl": [
+          1,
+          0
+        ],
+        "wall_t": [
+          2,
+          0
+        ],
+        "wall_tr": [
+          3,
+          0
+        ],
+        "wall_l": [
+          1,
+          1
+        ],
+        "wall_c": [
+          2,
+          1
+        ],
+        "wall_r": [
+          3,
+          1
+        ],
+        "wall_bl": [
+          1,
+          2
+        ],
+        "wall_b": [
+          2,
+          2
+        ],
+        "wall_br": [
+          3,
+          2
+        ],
+        "wall_solid0": [
+          0,
+          3
+        ],
+        "wall_solid1": [
+          0,
+          4
+        ],
+        "wall_in_se": [
+          1,
+          3
+        ],
+        "wall_in_sw": [
+          2,
+          3
+        ],
+        "wall_in_ne": [
+          1,
+          4
+        ],
+        "wall_in_nw": [
+          2,
+          4
+        ]
+      }
+    },
+    {
+      "id": "dungeon_tiles_deep",
+      "kind": "tileset",
+      "seeds": [
+        411
+      ],
+      "prompt": "deep underground crypt dungeon, dark purple stone brick walls, cracked dark red-brown floor tiles, 16-bit SNES JRPG roguelike dungeon",
+      "pick": 411,
+      "tiles": {
+        "floor0": [
+          0,
+          0
+        ],
+        "floor1": [
+          0,
+          1
+        ],
+        "floor2": [
+          0,
+          2
+        ],
+        "wall_tl": [
+          1,
+          0
+        ],
+        "wall_t": [
+          2,
+          0
+        ],
+        "wall_tr": [
+          3,
+          0
+        ],
+        "wall_l": [
+          1,
+          1
+        ],
+        "wall_c": [
+          2,
+          1
+        ],
+        "wall_r": [
+          3,
+          1
+        ],
+        "wall_bl": [
+          1,
+          2
+        ],
+        "wall_b": [
+          2,
+          2
+        ],
+        "wall_br": [
+          3,
+          2
+        ],
+        "wall_solid0": [
+          0,
+          3
+        ],
+        "wall_solid1": [
+          0,
+          4
+        ],
+        "wall_in_se": [
+          1,
+          3
+        ],
+        "wall_in_sw": [
+          2,
+          3
+        ],
+        "wall_in_ne": [
+          1,
+          4
+        ],
+        "wall_in_nw": [
+          2,
+          4
+        ]
+      }
+    },
+    {
+      "id": "stairs_down",
+      "kind": "object",
+      "seeds": [
+        501
+      ],
+      "prompt": "stone staircase going down into darkness, seen from above"
+    },
+    {
+      "id": "stairs_up",
+      "kind": "object",
+      "seeds": [
+        502
+      ],
+      "prompt": "stone staircase going up toward light, seen from above"
+    },
+    {
+      "id": "trap",
+      "kind": "object",
+      "seeds": [
+        503
+      ],
+      "prompt": "small round metal floor trap plate with a spiky rim, seen from above"
+    },
+    {
+      "id": "w_cypress_stick",
+      "kind": "item",
+      "seeds": [
+        601
+      ],
+      "prompt": "plain cypress wooden stick, simple wooden staff"
+    },
+    {
+      "id": "w_blessed_staff",
+      "kind": "item",
+      "seeds": [
+        602
+      ],
+      "prompt": "white holy staff with a glowing golden cross tip"
+    },
+    {
+      "id": "w_club",
+      "kind": "item",
+      "seeds": [
+        603
+      ],
+      "prompt": "heavy wooden club with knobs"
+    },
+    {
+      "id": "w_copper_sword",
+      "kind": "item",
+      "seeds": [
+        604
+      ],
+      "prompt": "short copper sword with a brown grip"
+    },
+    {
+      "id": "w_holy_knife",
+      "kind": "item",
+      "seeds": [
+        605
+      ],
+      "prompt": "silver holy dagger with a white cross-shaped hilt, glowing"
+    },
+    {
+      "id": "w_crossbow",
+      "kind": "item",
+      "seeds": [
+        606
+      ],
+      "prompt": "wooden crossbow with a steel bow, loaded with an arrow"
+    },
+    {
+      "id": "w_chain_sickle",
+      "kind": "item",
+      "seeds": [
+        607
+      ],
+      "prompt": "iron sickle blade attached to a chain with a weight, kusarigama"
+    },
+    {
+      "id": "w_iron_spear",
+      "kind": "item",
+      "seeds": [
+        608
+      ],
+      "prompt": "long iron spear with a leaf-shaped steel tip"
+    },
+    {
+      "id": "w_holy_lance",
+      "kind": "item",
+      "seeds": [
+        609
+      ],
+      "prompt": "ornate white and gold holy lance with a glowing cross-shaped tip"
+    },
+    {
+      "id": "w_smile_staff",
+      "kind": "item",
+      "seeds": [
+        610
+      ],
+      "prompt": "magic staff topped with a small smiling pink crystal"
+    },
+    {
+      "id": "w_wrath_staff",
+      "kind": "item",
+      "seeds": [
+        611
+      ],
+      "prompt": "dark magic staff with a purple lightning crystal at the tip"
+    },
+    {
+      "id": "w_seal_staff",
+      "kind": "item",
+      "seeds": [
+        612
+      ],
+      "prompt": "magic staff with a blue crystal orb wrapped in iron chains"
+    },
+    {
+      "id": "w_mind_staff",
+      "kind": "item",
+      "seeds": [
+        613
+      ],
+      "prompt": "elegant magic staff with a glowing cyan crystal, arcane symbols"
+    },
+    {
+      "id": "w_magma_staff",
+      "kind": "item",
+      "seeds": [
+        614
+      ],
+      "prompt": "magic staff with a burning red-orange lava rock at the tip, flames"
+    },
+    {
+      "id": "w_miracle_sword",
+      "kind": "item",
+      "seeds": [
+        615
+      ],
+      "prompt": "golden longsword with a green gem in the hilt, faint holy glow"
+    },
+    {
+      "id": "w_metal_slime_sword",
+      "kind": "item",
+      "seeds": [
+        616
+      ],
+      "prompt": "sword made of shiny liquid metal with a slime-shaped pommel, mirror-like blade"
+    },
+    {
+      "id": "s_leather_shield",
+      "kind": "item",
+      "seeds": [
+        621
+      ],
+      "prompt": "small round brown leather shield with a wooden rim"
+    },
+    {
+      "id": "s_scale_shield",
+      "kind": "item",
+      "seeds": [
+        622
+      ],
+      "prompt": "green dragon-scale shield, overlapping scales"
+    },
+    {
+      "id": "s_iron_shield",
+      "kind": "item",
+      "seeds": [
+        623
+      ],
+      "prompt": "sturdy gray iron kite shield with rivets"
+    },
+    {
+      "id": "s_power_shield",
+      "kind": "item",
+      "seeds": [
+        624
+      ],
+      "prompt": "red round shield with a golden fist emblem"
+    },
+    {
+      "id": "s_mirror_shield",
+      "kind": "item",
+      "seeds": [
+        625
+      ],
+      "prompt": "polished silver mirror shield reflecting light, ornate rim"
+    },
+    {
+      "id": "s_metal_slime_shield",
+      "kind": "item",
+      "seeds": [
+        626
+      ],
+      "prompt": "shield made of shiny liquid metal shaped like a slime, mirror-like"
+    },
+    {
+      "id": "i_herb",
+      "kind": "item",
+      "seeds": [
+        641
+      ],
+      "prompt": "bundle of green medicinal herb leaves"
+    },
+    {
+      "id": "i_herb_plus",
+      "kind": "item",
+      "seeds": [
+        642
+      ],
+      "prompt": "bundle of glowing bright green medicinal herb leaves with a small flower"
+    },
+    {
+      "id": "i_bread",
+      "kind": "item",
+      "seeds": [
+        643
+      ],
+      "prompt": "small round loaf of bread"
+    },
+    {
+      "id": "i_big_bread",
+      "kind": "item",
+      "seeds": [
+        644
+      ],
+      "prompt": "large golden loaf of bread"
+    },
+    {
+      "id": "i_antidote",
+      "kind": "item",
+      "seeds": [
+        645
+      ],
+      "prompt": "purple antidote herb with a small berry"
+    },
+    {
+      "id": "i_power_seed",
+      "kind": "item",
+      "seeds": [
+        646
+      ],
+      "prompt": "red glowing magical seed"
+    },
+    {
+      "id": "i_life_nut",
+      "kind": "item",
+      "seeds": [
+        647
+      ],
+      "prompt": "golden acorn nut with a green leaf, glowing"
+    },
+    {
+      "id": "i_holy_water",
+      "kind": "item",
+      "seeds": [
+        648
+      ],
+      "prompt": "small glass vial of glowing blue magic water with a cork"
+    },
+    {
+      "id": "i_arrows",
+      "kind": "item",
+      "seeds": [
+        649
+      ],
+      "prompt": "bundle of three wooden arrows with steel tips and white feathers"
+    },
+    {
+      "id": "i_scroll_remira",
+      "kind": "item",
+      "seeds": [
+        650
+      ],
+      "prompt": "rolled parchment scroll with a blue ribbon and a map symbol"
+    },
+    {
+      "id": "i_scroll_basilura",
+      "kind": "item",
+      "seeds": [
+        651
+      ],
+      "prompt": "rolled parchment scroll with a red ribbon and a swirling wind symbol"
+    },
+    {
+      "id": "i_scroll_sleep",
+      "kind": "item",
+      "seeds": [
+        652
+      ],
+      "prompt": "rolled parchment scroll with a purple ribbon and a crescent moon symbol"
+    },
+    {
+      "id": "i_killer_pierce",
+      "kind": "item",
+      "seeds": [
+        653
+      ],
+      "prompt": "legendary golden earring with a sharp crescent blade and a red gem, sparkling"
+    }
+  ],
+  "tilesets_doc": "rd_tile__tileset output = 4x5 grid of 32px: col0 rows0-2 plain A (floor) variants; (1..3,0..2) = 3x3 B(wall) edge block [TL,T,TR / L,C,R / BL,B,BR]; (0,3),(0,4) plain B; (1,3)(2,3)(1,4)(2,4) inner corners with A at SE,SW,NE,NW; (3,3),(3,4) thin strips"
+}
