@@ -40,7 +40,7 @@ export class Game {
   enterFloor(n) {
     this.floor = n;
     const goal = n === MAX_FLOOR && !this.hasPierce;
-    this.map = generateFloor(this.rng, { stairsUp: this.returning || goal });
+    this.map = generateFloor(this.rng, { stairsUp: this.returning || goal, noDeadEnds: n <= 5 });
     setTileset(n >= 6 ? 'dungeon_tiles_deep' : 'dungeon_tiles');
     this.monsters = [];
     this.items = [];
@@ -91,7 +91,8 @@ export class Game {
     }
   }
 
-  updateVisible() { this.visible = computeVisible(this.map, this.player.x, this.player.y); }
+  // B1〜B5 は通路でも周囲 4 マスが見える(難易度緩和)。B6 以降はトルネコ通り周囲 1 マス
+  updateVisible() { this.visible = computeVisible(this.map, this.player.x, this.player.y, this.floor <= 5 ? 4 : 1); }
   isVisible(x, y) { return this.map.inBounds(x, y) && this.visible[y * this.map.w + x] === 1; }
 
   // ---- ログ・演出 --------------------------------------------------------
@@ -245,7 +246,7 @@ export class Game {
     }
     if (p.hunger <= 0) damagePlayer(this, 1, '空腹');
     else if (this.turn % Math.max(2, Math.round(150 / p.maxHp)) === 0 && p.hp < p.maxHp && !(p.status.poison > 0)) p.hp++;
-    if (this.turn % 5 === 0 && p.mp < p.maxMp) p.mp++;
+    // MP は自然回復しない（魔法の聖水・レベルアップのみ）
     // 状態異常
     if (p.status.poison > 0) { damagePlayer(this, 1, '毒'); if (--p.status.poison === 0) { delete p.status.poison; this.log('毒が抜けた。'); } }
     for (const k of ['sleep', 'confusion', 'sukara', 'baikiruto']) {

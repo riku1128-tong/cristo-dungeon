@@ -33,7 +33,7 @@ export class DungeonMap {
 }
 
 export function generateFloor(rng, opts = {}) {
-  for (let attempt = 0; attempt < 50; attempt++) {
+  for (let attempt = 0; attempt < 200; attempt++) {
     const map = tryGenerate(rng, opts);
     if (map) return map;
   }
@@ -48,7 +48,8 @@ function tryGenerate(rng, opts) {
   let roomCount = 0;
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
     const x0 = c * sw, y0 = r * sh;
-    const node = rng.chance(0.18) && roomCount >= 2; // 通路の交点だけのセクション
+    // 通路の交点だけのセクション(行き止まりの元)。浅い階(opts.noDeadEnds)では作らない
+    const node = !opts.noDeadEnds && rng.chance(0.18) && roomCount >= 2;
     if (node) {
       const x = rng.int(x0 + 3, x0 + sw - 4), y = rng.int(y0 + 3, y0 + sh - 4);
       cells.push({ c, r, node: true, x, y, w: 1, h: 1 });
@@ -85,10 +86,11 @@ function tryGenerate(rng, opts) {
   for (const [a, b] of edges) {
     if (find(a.id) !== find(b.id)) { parent[find(a.id)] = find(b.id); used.push([a, b]); }
   }
-  for (const e of edges) if (!used.includes(e) && rng.chance(0.35)) used.push(e);
+  for (const e of edges) if (!used.includes(e) && rng.chance(opts.noDeadEnds ? 0.5 : 0.35)) used.push(e);
   for (const [a, b] of used) carveCorridor(map, rng, a, b);
   // 交点セクションの接続数が 1 だと行き止まりになる。それも味だが、孤立は避ける
   if (!connected(map)) return null;
+  if (!corridorsAreOneWide(map)) return null;
   // 階段
   const stairsRoom = rng.pick(cells.filter(c => !c.node));
   map.stairs = { x: rng.int(stairsRoom.x, stairsRoom.x + stairsRoom.w - 1), y: rng.int(stairsRoom.y, stairsRoom.y + stairsRoom.h - 1), up: !!opts.stairsUp };
@@ -124,6 +126,15 @@ function line(map, x0, y0, x1, y1) {
     if (x === x1 && y === y1) break;
     if (x !== x1) x += dx; else y += dy;
   }
+}
+
+// 通路は 1 マス幅: 部屋の外に 2x2 の床ブロックがあれば失敗
+function corridorsAreOneWide(map) {
+  for (let y = 0; y < map.h - 1; y++) for (let x = 0; x < map.w - 1; x++) {
+    const cells = [[x, y], [x + 1, y], [x, y + 1], [x + 1, y + 1]];
+    if (cells.every(([cx, cy]) => map.isFloor(cx, cy)) && cells.some(([cx, cy]) => map.room(cx, cy) < 0)) return false;
+  }
+  return true;
 }
 
 function connected(map) {

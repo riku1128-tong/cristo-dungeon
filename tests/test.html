@@ -58,6 +58,23 @@ test('dungeon: 200 floors connected, stairs on floor, >=4 rooms', () => {
     assert(m.stairs.up === (s % 2 === 0), 'stairs direction');
   }
 });
+test('dungeon: corridors are 1 tile wide; shallow floors have no dead ends', () => {
+  let deadDeep = 0;
+  for (let s = 1; s <= 100; s++) {
+    for (const shallow of [true, false]) {
+      const m = generateFloor(new RNG(s * 7 + (shallow ? 1 : 0)), { noDeadEnds: shallow });
+      for (let y = 1; y < m.h - 1; y++) for (let x = 1; x < m.w - 1; x++) {
+        if (!m.isFloor(x, y)) continue;
+        if (m.room(x, y) < 0) {
+          const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => m.isFloor(x + dx, y + dy)).length;
+          if (n <= 1) { if (shallow) throw new Error(`seed ${s}: dead end at ${x},${y}`); deadDeep++; }
+        }
+        assert(!(m.isFloor(x + 1, y) && m.isFloor(x, y + 1) && m.isFloor(x + 1, y + 1) && [m.room(x, y), m.room(x + 1, y), m.room(x, y + 1), m.room(x + 1, y + 1)].some(r => r < 0)), `seed ${s}: 2x2 corridor block`);
+      }
+    }
+  }
+  return `deep-floor dead ends over 100 maps: ${deadDeep}`;
+});
 test('dungeon: diagonal corner-cutting is blocked', () => {
   const m = generateFloor(new RNG(3));
   let checked = 0;
@@ -212,7 +229,7 @@ test('ホイミ / ベホイミ / スカラ / バイキルト / ザキ / ザラ�
   const m = spawn(g, 'slime', 1, 0); castSpell(g, sp('zaki')); eq(g.monsters.length, 0, 'zaki kills (rng fixed)');
   const u = spawn(g, 'skeleton', 1, 0); castSpell(g, sp('zaki')); eq(g.monsters.length, 1, 'zaki fails on undead');
   g.monsters = []; spawn(g, 'slime', 1, 0); spawn(g, 'slime', 2, 0); castSpell(g, sp('zaraki')); eq(g.monsters.length, 0, 'zaraki');
-  const spent = 99 - 3 - 6 - 3 - 4 - 5 - 5 - 10; assert(g.player.mp >= spent && g.player.mp <= spent + 2, 'mp total ' + g.player.mp); // 自然回復分の誤差
+  eq(g.player.mp, 99 - 3 - 6 - 3 - 4 - 5 - 5 - 10, 'mp total (no natural regen)');
 });
 test('MP shortage blocks spell', () => {
   const g = setup(); g.player.mp = 0; const ok = castSpell(g, SPELLS[0]); eq(ok, false);
@@ -233,6 +250,9 @@ test('level up grows HP/MP and learns spells', () => {
   const g = setup(1, 0.5); const hp = g.player.maxHp, mp = g.player.maxMp;
   g.gainExp(EXP_TABLE[4]); eq(g.player.lv, 4); assert(g.player.maxHp > hp && g.player.maxMp > mp);
   assert(g.messages.some(m => m.text.includes('スカラを覚えた')));
+});
+test('MP does not regenerate over time', () => {
+  const g = setup(); g.player.mp = 2; for (let i = 0; i < 50; i++) g.rest(); eq(g.player.mp, 2);
 });
 test('hunger: 0 → HP damage each turn', () => {
   const g = setup(); g.player.hunger = 0; const hp = g.player.hp; g.rest(); eq(g.player.hp, hp - 1);

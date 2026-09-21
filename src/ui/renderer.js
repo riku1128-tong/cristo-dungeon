@@ -67,7 +67,6 @@ export class Renderer {
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       const i = y * map.w + x;
       const vis = game.visible[i] === 1;
-      if (!vis && !map.explored[i]) continue;
       let t;
       if (map.tiles[i] === FLOOR) t = getTile('floor' + this.floorVariant[i]);
       else {
@@ -76,7 +75,8 @@ export class Renderer {
         t = getTile(name);
       }
       ctx.drawImage(t.img, t.sx, t.sy, t.size, t.size, x * TILE, y * TILE, TILE, TILE);
-      if (!vis) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
+      // 見えていない所は薄暗く。未探索はさらに暗いが輪郭は分かる
+      if (!vis) { ctx.fillStyle = map.explored[i] ? 'rgba(0,0,0,0.42)' : 'rgba(0,0,0,0.62)'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
     }
   }
 
