@@ -1,6 +1,6 @@
 // 起動・メインループ・シーン管理
 import { SCREEN_W, SCREEN_H, MOVE_MS } from './config.js';
-import { loadAssets } from './assets.js';
+import { loadAssets, getSprite, getTile } from './assets.js';
 import { Game } from './game.js';
 import { Renderer } from './ui/renderer.js';
 import { Input, is, dirFromCode } from './ui/input.js';
@@ -135,10 +135,25 @@ if (autoplay) {
 function drawTitle(ctx, now) {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
-  textCenter(ctx, 'クリフト', SCREEN_W / 2, 120, '#8f8', 40);
-  textCenter(ctx, 'ふしぎのダンジョン', SCREEN_W / 2, 170, '#fff', 40);
-  textCenter(ctx, 'B10F のキラーピアスを持ち帰れ', SCREEN_W / 2, 240, '#ccc', 16);
-  if (Math.floor(now / 500) % 2 === 0) textCenter(ctx, 'PUSH Z / ENTER', SCREEN_W / 2, 320, '#fff', 20);
+  // 床タイルを敷いた帯の上をクリフトが歩く
+  const floor = getTile('floor0');
+  const bandY = 340;
+  for (let x = 0; x < SCREEN_W; x += 32) {
+    ctx.drawImage(floor.img, floor.sx, floor.sy, floor.size, floor.size, x, bandY, 32, 32);
+    ctx.drawImage(floor.img, floor.sx, floor.sy, floor.size, floor.size, x, bandY + 32, 32, 32);
+  }
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillRect(0, bandY, SCREEN_W, 64);
+  const spr = getSprite('cristo', '#40c040');
+  const frame = spr.frames > 1 ? Math.floor(now / 125) % spr.frames : 0;
+  const px = ((now / 12) % (SCREEN_W + 96)) - 48;
+  ctx.drawImage(spr.img, frame * spr.cell, 2 * spr.cell, spr.cell, spr.cell, Math.round(px), bandY + 8, 48, 48);
+  textCenter(ctx, 'クリフト', SCREEN_W / 2 + 2, 92, '#000', 44);
+  textCenter(ctx, 'クリフト', SCREEN_W / 2, 90, '#8f8', 44);
+  textCenter(ctx, 'ふしぎのダンジョン', SCREEN_W / 2 + 2, 142, '#000', 44);
+  textCenter(ctx, 'ふしぎのダンジョン', SCREEN_W / 2, 140, '#fff', 44);
+  textCenter(ctx, '― B10F に眠るキラーピアスを持ち帰れ ―', SCREEN_W / 2, 215, '#ccc', 16);
+  if (Math.floor(now / 500) % 2 === 0) textCenter(ctx, 'PUSH Z / ENTER', SCREEN_W / 2, 280, '#fff', 20);
   text(ctx, `seed ${seed}`, 8, SCREEN_H - 24, '#666', 12);
 }
 
