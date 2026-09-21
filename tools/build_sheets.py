@@ -378,7 +378,8 @@ def main() -> int:
         try:
             old = json.loads(MANIFEST.read_text(encoding="utf-8"))
             for k in manifest:
-                manifest[k].update(old.get(k, {}))
+                # 出力ファイルが消えている古いエントリは捨てる
+                manifest[k].update({i: v for i, v in old.get(k, {}).items() if (ROOT / v["file"]).exists()})
         except json.JSONDecodeError:
             pass
 

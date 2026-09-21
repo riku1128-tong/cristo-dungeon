@@ -1,0 +1,32 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  color: #ddd;
+  font-family: "DotGothic16", "MS Gothic", monospace;
+  overflow: hidden;
+}
+#stage {
+  position: absolute;
+  inset: 0 0 28px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#game {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #000;
+  outline: none;
+}
+#hint {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+}

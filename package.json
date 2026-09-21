@@ -1,0 +1,14 @@
+{
+  "name": "cristo-dungeon",
+  "private": true,
+  "type": "module",
+  "description": "SFC風ローグライク（ブラウザ）。ゲーム本体はビルド不要。devDependencies は検証用のみ。",
+  "scripts": {
+    "serve": "python -m http.server 8000",
+    "shot": "node tools/shot.mjs",
+    "test": "node tools/shot.mjs --test"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

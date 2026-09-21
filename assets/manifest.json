@@ -11,19 +11,6 @@
         "up"
       ],
       "source": "assets/raw/cristo/seed_101.png"
-    },
-    "slime": {
-      "file": "assets/sprites/slime.png",
-      "cell": 48,
-      "frames": 1,
-      "dirs": [
-        "down",
-        "left",
-        "right",
-        "up"
-      ],
-      "bounce": true,
-      "source": "assets/raw/slime/seed_201.png"
     }
   },
   "tilesets": {

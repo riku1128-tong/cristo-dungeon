@@ -5,3 +5,5 @@ assets/raw/_contact/
 tools/.cache/
 Thumbs.db
 .DS_Store
+node_modules/
+shots/
