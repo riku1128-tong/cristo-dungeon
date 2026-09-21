@@ -9,6 +9,10 @@ SFC「トルネコの大冒険」風のブラウザ・ローグライク。主�
 
 ## 遊び方
 
+**ブラウザで遊ぶ**: https://riku1128-tong.github.io/cristo-dungeon/ （GitHub Pages、push すると数分で更新）
+
+ローカルで動かす場合:
+
 ```
 python -m http.server 8000     # プロジェクト直下で
 # → http://localhost:8000/        (?seed=123 で同じダンジョンを再現)
